@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env?.VITE_API_URL || '';
+// Get API URL from environment variable or use empty string as fallback
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '';
 
 interface ApiResponse<T> {
   data?: T;
@@ -47,7 +48,9 @@ class ApiClient {
   }
 
   async login() {
-    window.location.href = `${this.baseURL}/api/auth/google`;
+    if (typeof window !== 'undefined') {
+      window.location.href = `${this.baseURL}/api/auth/google`;
+    }
   }
 
   async logout() {
