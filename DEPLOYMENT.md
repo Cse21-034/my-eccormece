@@ -39,7 +39,7 @@ Add these environment variables in Render:
 ```env
 NODE_ENV=production
 DATABASE_URL=your-postgresql-connection-string
-SESSION_SECRET=your-super-secret-session-key
+SESSION_SECRET=your-super-secret-session-key-here
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_CALLBACK_URL=https://your-backend.onrender.com/api/auth/google/callback
@@ -57,11 +57,8 @@ FRONTEND_URL=https://your-frontend.vercel.app
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Click "New Project"
 3. Import your GitHub repository
-4. Set the following configuration:
-   - **Framework Preset**: `Vite`
-   - **Root Directory**: `client`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
+4. **Important**: The project will automatically detect the Vite configuration from the root `vercel.json`
+5. No additional configuration needed - Vercel will use the root configuration
 
 ### 3.2 Environment Variables
 Add this environment variable in Vercel:
@@ -134,6 +131,11 @@ VITE_API_URL=https://your-backend.onrender.com
 - Check that all dependencies are in the correct package.json files
 - Verify TypeScript compilation
 - Check build logs for specific errors
+
+### Vercel Build Issues
+- The root `vercel.json` automatically handles the client build
+- Make sure the client folder contains all necessary dependencies
+- Check that the build command works locally: `cd client && npm install && npm run build`
 
 ## Environment Variables Reference
 

@@ -1,0 +1,7 @@
+# Ignore server files for Vercel deployment
+server/
+shared/
+*.md
+.gitignore
+.env*
+package-lock.json 
