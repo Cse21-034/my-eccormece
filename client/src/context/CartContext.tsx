@@ -1,19 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-
-interface CartItem {
-  id: number;
-  productId: number;
-  quantity: number;
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    imageUrl: string;
-  };
-}
+import { CartItem } from "@/types";
 
 interface CartContextType {
   items: CartItem[];
@@ -114,13 +103,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCart = async () => {
     setError(null);
     // Remove all items one by one
-    for (const item of items) {
-      await removeFromCartMutation.mutateAsync(item.id);
+    if (Array.isArray(items)) {
+      for (const item of items) {
+        await removeFromCartMutation.mutateAsync(item.id);
+      }
     }
   };
 
   const value: CartContextType = {
-    items,
+    items: Array.isArray(items) ? items : [],
     addToCart,
     updateQuantity,
     removeFromCart,

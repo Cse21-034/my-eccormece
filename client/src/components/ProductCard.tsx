@@ -1,22 +1,39 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingCart, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import type { Product } from "@shared/schema";
+import { Product } from "@/types";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductCardProps {
-  product: Product & {
-    category?: { name: string };
-  };
+  product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { addToCart } = useCart();
+  const { toast } = useToast();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product.id, 1);
+  const handleAddToCart = async () => {
+    setIsLoading(true);
+    try {
+      await addToCart(product.id, 1);
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const discountPercentage = product.originalPrice 
@@ -24,72 +41,52 @@ export default function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="product-card bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-      <Link href={`/product/${product.id}`}>
-        <div className="relative">
-          <img 
-            src={product.images?.[0] || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300"} 
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      <CardHeader className="p-0">
+        <div className="aspect-square overflow-hidden">
+          <img
+            src={product.imageUrl}
             alt={product.name}
-            className="w-full h-64 object-cover"
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
           />
+        </div>
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-2">
+          <h3 className="font-semibold text-lg line-clamp-2">{product.name}</h3>
           {product.featured && (
-            <Badge className="absolute top-2 left-2 bg-secondary">
+            <Badge className="ml-2 flex-shrink-0 bg-secondary">
               Featured
             </Badge>
           )}
-          {discountPercentage > 0 && (
-            <Badge variant="destructive" className="absolute top-2 right-2">
-              {discountPercentage}% OFF
-            </Badge>
-          )}
         </div>
-        <div className="p-4">
-          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{product.name}</h3>
-          <p className="text-gray-600 text-sm mb-2">{product.category?.name || 'Uncategorized'}</p>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-secondary">${product.price}</span>
-              {product.originalPrice && (
-                <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
-              )}
-            </div>
-            <Button 
-              size="sm"
-              onClick={handleAddToCart}
-              className="bg-primary hover:bg-gray-800"
-            >
-              Add to Cart
+        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+          {product.description}
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-xl font-bold text-green-600">
+            ${product.price.toFixed(2)}
+          </span>
+        </div>
+      </CardContent>
+      <CardFooter className="p-4 pt-0">
+        <div className="flex gap-2 w-full">
+          <Button
+            onClick={handleAddToCart}
+            disabled={isLoading}
+            className="flex-1"
+            size="sm"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {isLoading ? "Adding..." : "Add to Cart"}
+          </Button>
+          <Link href={`/product/${product.id}`}>
+            <Button variant="outline" size="sm">
+              <Eye className="h-4 w-4" />
             </Button>
-          </div>
-          
-          {/* Sizes */}
-          {product.sizes && product.sizes.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {product.sizes.slice(0, 4).map((size) => (
-                <span key={size} className="text-xs border border-gray-300 px-2 py-1 rounded">
-                  {size}
-                </span>
-              ))}
-              {product.sizes.length > 4 && (
-                <span className="text-xs text-gray-500">+{product.sizes.length - 4} more</span>
-              )}
-            </div>
-          )}
-
-          {/* Stock status */}
-          <div className="mt-3">
-            {product.stock > 0 ? (
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                In Stock ({product.stock})
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-red-600 border-red-600">
-                Out of Stock
-              </Badge>
-            )}
-          </div>
+          </Link>
         </div>
-      </Link>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

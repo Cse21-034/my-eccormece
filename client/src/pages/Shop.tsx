@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
-import { ProductCard } from "@/components/ProductCard";
+import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Search, Filter } from "lucide-react";
+import { Category } from "@/types";
 
 export default function Shop() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,6 +56,10 @@ export default function Shop() {
     setPriceRange([0, 1000]);
   };
 
+  const handlePriceRangeChange = (value: number[]) => {
+    setPriceRange([value[0], value[1]]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -99,7 +104,7 @@ export default function Shop() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All categories</SelectItem>
-                      {categories.map((category: any) => (
+                      {Array.isArray(categories) && categories.map((category: Category) => (
                         <SelectItem key={category.id} value={category.id.toString()}>
                           {category.name}
                         </SelectItem>
@@ -115,7 +120,7 @@ export default function Shop() {
                   </label>
                   <Slider
                     value={priceRange}
-                    onValueChange={setPriceRange}
+                    onValueChange={handlePriceRangeChange}
                     max={1000}
                     min={0}
                     step={10}
@@ -137,7 +142,7 @@ export default function Shop() {
         {/* Results */}
         <div className="mb-4">
           <p className="text-gray-600">
-            {isLoading ? "Loading..." : `${products.length} products found`}
+            {isLoading ? "Loading..." : `${Array.isArray(products) ? products.length : 0} products found`}
           </p>
         </div>
 
@@ -152,7 +157,7 @@ export default function Shop() {
               </div>
             ))}
           </div>
-        ) : products.length > 0 ? (
+        ) : Array.isArray(products) && products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product: any) => (
               <ProductCard key={product.id} product={product} />
